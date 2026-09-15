@@ -3,23 +3,141 @@ import 'operations_pages.dart';
 import 'setup_pages.dart';
 import 'action_pages.dart';
 import 'game_state.dart';
-void main()=>runApp(const TruckManagerApp());
-const bg=Color(0xFF08111B);
-class TruckManagerApp extends StatefulWidget{const TruckManagerApp({super.key});@override State<TruckManagerApp> createState()=>_TruckManagerAppState();}class _TruckManagerAppState extends State<TruckManagerApp>{bool started=false;@override Widget build(BuildContext c)=>MaterialApp(debugShowCheckedModeBanner:false,title:'Truck Manager',theme:ThemeData.dark().copyWith(scaffoldBackgroundColor:bg,colorScheme:const ColorScheme.dark(primary:green,surface:panel),cardTheme:const CardThemeData(color:panel),inputDecorationTheme:const InputDecorationTheme(border:OutlineInputBorder())),home:started?const Shell():NewCompanyPage(onStart:()=>setState(()=>started=true)));}
-class Truck{final String unit,name,type,route,driver,co,status,mode,terminal;final int miles,companyMiles,level;final double mpg;const Truck(this.unit,this.name,this.type,this.route,this.driver,this.co,this.status,this.mode,this.terminal,this.miles,this.companyMiles,this.level,this.mpg);}
-class Driver{final String id,name,truck,cdl,med,hos,status;final int careerMiles,companyMiles,level,safety;final List<String> endorsements;const Driver(this.id,this.name,this.truck,this.cdl,this.med,this.hos,this.status,this.careerMiles,this.companyMiles,this.level,this.safety,this.endorsements);}
-class Load{final String id,origin,destination,cargo,equipment,pickup,delivery,status;final int miles;final double revenue,profit;const Load(this.id,this.origin,this.destination,this.cargo,this.equipment,this.pickup,this.delivery,this.status,this.miles,this.revenue,this.profit);}
-const trucks=[Truck('1001','Big Red','Sleeper Tractor','Dallas, TX → Atlanta, GA','James Wilson','Michael Reed','ON TIME','STAFF','Dallas',487231,182440,18,7.4),Truck('1047','Road King','Sleeper Tractor','Phoenix, AZ → Denver, CO','Marcus Reed','—','ON TIME','AUTO','Phoenix',284912,201044,12,7.8),Truck('207','Blue Line','Box Truck','Houston, TX → Austin, TX','Anthony Carter','—','ATTENTION','AUTO','Dallas',98124,72119,7,11.2),Truck('88','Sprinter 88','Cargo Van','Fort Worth, TX → Tulsa, OK','Robert Davis','—','AVAILABLE','MANUAL','Dallas',62119,44510,5,19.6)];
-const drivers=[Driver('D-0182','James Wilson','1001','Class A','2027-03-18','3h 18m','DRIVING',1384220,642817,27,96,['Tanker','HazMat','Doubles/Triples']),Driver('D-0194','Michael Reed','1001','Class A','2027-09-02','Resting','SLEEPER',921440,411208,21,98,['HazMat']),Driver('D-0211','Marcus Reed','1047','Class A','2026-10-04','6h 02m','DRIVING',710884,301443,16,92,['Tanker']),Driver('D-0240','Anthony Carter','207','Class B','2026-09-28','5h 44m','DRIVING',388210,144220,11,88,[])];
-const loads=[Load('TM-000127','Dallas, TX','Atlanta, GA','Consumer Goods','Dry Van','Sep 15 09:30','Sep 16 08:00','IN TRANSIT',781,3840,1426),Load('TM-000128','Denver, CO','Kansas City, MO','Packaged Food','Reefer','Sep 15 12:00','Sep 16 02:30','AVAILABLE',603,2910,1040),Load('TM-000129','Houston, TX','Austin, TX','Retail Freight','Box Truck','Sep 15 10:15','Sep 15 14:30','IN TRANSIT',165,790,312),Load('TM-000130','Fort Worth, TX','Tulsa, OK','Expedited Parts','Cargo Van','Sep 15 11:00','Sep 15 17:00','AVAILABLE',263,1120,508)];
-class Shell extends StatefulWidget{const Shell({super.key});@override State<Shell> createState()=>_ShellState();}
-class _ShellState extends State<Shell>{int page=0;final pages=const['Dashboard','Map','Dispatch','Loads','Fleet','Drivers','Terminals','Staff','Safety','Maintenance','Customers','Finance','Reports','Actions','Alerts','Settings'];@override void initState(){super.initState();truckGameState.addListener(_refresh);}@override void dispose(){truckGameState.removeListener(_refresh);super.dispose();}void _refresh()=>setState((){});@override Widget build(BuildContext c)=>Scaffold(body:SafeArea(child:Column(children:[top(),Expanded(child:Row(children:[NavigationRail(backgroundColor:const Color(0xFF0C1722),extended:MediaQuery.sizeOf(c).width>1200,selectedIndex:page,onDestinationSelected:(v)=>setState(()=>page=v),destinations:pages.map((p)=>NavigationRailDestination(icon:const Icon(Icons.circle_outlined,size:16),selectedIcon:const Icon(Icons.local_shipping),label:Text(p))).toList()),Expanded(child:switch(page){0=>const DashboardPage(),1=>const MapPage(),2=>const DispatchPage(),3=>const LoadsPage(),4=>const FleetPage(),5=>const DriversPage(),6=>const TerminalsPage(),7=>const StaffPage(),8=>const SafetyPage(),9=>const MaintenancePage(),10=>const CustomersPage(),11=>const FinancePage(),12=>const ReportsPage(),13=>const ActionCenterPage(),14=>const NotificationsPage(),_=>const SettingsPage()})]))])));
-Widget top()=>Container(padding:const EdgeInsets.symmetric(horizontal:18,vertical:10),color:const Color(0xFF0D1925),child:Row(children:[const Icon(Icons.local_shipping,color:green),const SizedBox(width:8),Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('TRUCK MANAGER',style:TextStyle(fontSize:20,fontWeight:FontWeight.w800)),Text('${truckGameState.playerName} • ${truckGameState.companyName}',style:const TextStyle(fontSize:10,color:Colors.white54))]),const Spacer(),Metric('CASH','\$${truckGameState.cash.toStringAsFixed(2)}'),Metric('LEVEL','${truckGameState.companyLevel}'),Metric('FLEET','${truckGameState.truckCount}'),for(final s in[0,1,2,5,10])Padding(padding:const EdgeInsets.only(left:4),child:ChoiceChip(label:Text(s==0?'Ⅱ':'${s}×'),selected:truckGameState.speed==s,onSelected:(_)=>truckGameState.setSpeed(s)))]));}
-class Metric extends StatelessWidget{final String a,b;const Metric(this.a,this.b,{super.key});@override Widget build(BuildContext c)=>Padding(padding:const EdgeInsets.symmetric(horizontal:10),child:Column(mainAxisSize:MainAxisSize.min,children:[Text(a,style:const TextStyle(fontSize:10,color:Colors.white54)),Text(b,style:const TextStyle(fontWeight:FontWeight.bold))]));}
-class PageFrame extends StatelessWidget{final String title,subtitle;final Widget child;const PageFrame(this.title,this.subtitle,this.child,{super.key});@override Widget build(BuildContext c)=>Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800)),Text(subtitle,style:const TextStyle(color:Colors.white54)),const SizedBox(height:12),Expanded(child:child)]));}
-class DispatchPage extends StatefulWidget{const DispatchPage({super.key});@override State<DispatchPage> createState()=>_DispatchPageState();}class _DispatchPageState extends State<DispatchPage>{Truck selected=trucks.first;@override Widget build(BuildContext c)=>PageFrame('DISPATCH CENTER','Nationwide fleet operations',LayoutBuilder(builder:(c,x)=>x.maxWidth>950?Row(children:[Expanded(flex:3,child:list()),const SizedBox(width:12),Expanded(flex:2,child:detail())]):Column(children:[Expanded(child:list()),Expanded(child:detail())])));Widget list()=>Card(child:ListView(children:trucks.map((t)=>ListTile(selected:t==selected,onTap:()=>setState(()=>selected=t),leading:const Icon(Icons.local_shipping),title:Text('Unit ${t.unit} • ${t.name}'),subtitle:Text('${t.route}\n${t.driver}${t.co!='—'?' / ${t.co}':''}'),isThreeLine:true,trailing:Text('${t.mode}\n${t.status}',textAlign:TextAlign.right,style:const TextStyle(color:green)))).toList()));Widget detail()=>InfoCard('UNIT ${selected.unit} • ${selected.name}',[kv('Vehicle',selected.type),kv('Terminal',selected.terminal),kv('Driver',selected.driver),kv('Co-driver',selected.co),kv('Dispatch',selected.mode),kv('Odometer','${selected.miles} mi'),kv('Level','${selected.level}'),kv('Team rotation',selected.co=='—'?'Solo':'Automatic')]);}
-class FleetPage extends StatefulWidget{const FleetPage({super.key});@override State<FleetPage> createState()=>_FleetPageState();}class _FleetPageState extends State<FleetPage>{Truck selected=trucks.first;@override Widget build(BuildContext c)=>PageFrame('FLEET','Equipment records, mileage, levels and profitability',Row(children:[Expanded(flex:3,child:Card(child:ListView(children:trucks.map((t)=>ListTile(onTap:()=>setState(()=>selected=t),selected:t==selected,leading:const Icon(Icons.fire_truck),title:Text('Unit ${t.unit} • ${t.name}'),subtitle:Text('${t.type} • ${t.terminal} Terminal'),trailing:Text('Lv ${t.level}\n${t.miles} mi',textAlign:TextAlign.right))).toList()))),const SizedBox(width:12),Expanded(flex:2,child:InfoCard('TRUCK RECORD',[kv('Unit',selected.unit),kv('Nickname',selected.name),kv('Class',selected.type),kv('Odometer','${selected.miles} mi'),kv('Company miles','${selected.companyMiles} mi'),kv('Fuel economy','${selected.mpg} MPG'),kv('Truck level','Level ${selected.level}'),kv('Assigned driver',selected.driver),kv('Home terminal',selected.terminal),kv('Status',selected.status)]))]));}
-class DriversPage extends StatefulWidget{const DriversPage({super.key});@override State<DriversPage> createState()=>_DriversPageState();}class _DriversPageState extends State<DriversPage>{Driver selected=drivers.first;@override Widget build(BuildContext c)=>PageFrame('DRIVERS','Career mileage, CDL, endorsements, HOS and safety',Row(children:[Expanded(flex:3,child:Card(child:ListView(children:drivers.map((d)=>ListTile(onTap:()=>setState(()=>selected=d),selected:d==selected,leading:const CircleAvatar(child:Icon(Icons.person)),title:Text('${d.name} • ${d.id}'),subtitle:Text('${d.cdl} • Unit ${d.truck} • ${d.status}'),trailing:Text('Lv ${d.level}\nSafety ${d.safety}',textAlign:TextAlign.right))).toList()))),const SizedBox(width:12),Expanded(flex:2,child:InfoCard('DRIVER QUALIFICATION FILE',[kv('Driver',selected.name),kv('CDL',selected.cdl),kv('Medical card expires',selected.med),kv('Endorsements',selected.endorsements.isEmpty?'None':selected.endorsements.join(', ')),kv('HOS',selected.hos),kv('Career miles','${selected.careerMiles} mi'),kv('Company miles','${selected.companyMiles} mi'),kv('Driver level','Level ${selected.level}'),kv('Safety rating','${selected.safety}/100'),kv('Assigned truck','Unit ${selected.truck}')]))]));}
-class LoadsPage extends StatelessWidget{const LoadsPage({super.key});@override Widget build(BuildContext c)=>PageFrame('LOAD BOARD','Available and active freight across the United States',Column(children:[Card(child:Padding(padding:const EdgeInsets.all(10),child:Row(children:[FilledButton.icon(onPressed:truckGameState.acceptLoad,icon:const Icon(Icons.add_road),label:const Text('ACCEPT NEXT LOAD')),const SizedBox(width:8),FilledButton.icon(onPressed:truckGameState.activeLoads>0?()=>truckGameState.completeLoad():null,icon:const Icon(Icons.flag),label:const Text('COMPLETE LOAD')),const SizedBox(width:12),Text('Active: ${truckGameState.activeLoads}')]))),Expanded(child:Card(child:ListView(children:loads.map((l)=>ListTile(leading:Icon(l.status=='AVAILABLE'?Icons.add_road:Icons.route),title:Text('${l.id} • ${l.origin} → ${l.destination}'),subtitle:Text('${l.cargo} • ${l.equipment} • ${l.miles} mi\nPickup ${l.pickup} • Deliver ${l.delivery}'),isThreeLine:true,trailing:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.end,children:[Text('\$${l.revenue.toStringAsFixed(0)}',style:const TextStyle(fontWeight:FontWeight.bold)),Text('Profit \$${l.profit.toStringAsFixed(0)}',style:const TextStyle(color:green)),Text(l.status,style:const TextStyle(fontSize:10))]))).toList())))]));}
-class InfoCard extends StatelessWidget{final String title;final List<Widget> rows;const InfoCard(this.title,this.rows,{super.key});@override Widget build(BuildContext c)=>Card(child:Padding(padding:const EdgeInsets.all(18),child:ListView(children:[Text(title,style:const TextStyle(fontSize:20,fontWeight:FontWeight.bold,color:green)),const Divider(),...rows])));}
-Widget kv(String a,String b)=>Padding(padding:const EdgeInsets.symmetric(vertical:7),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[SizedBox(width:145,child:Text(a,style:const TextStyle(color:Colors.white54))),Expanded(child:Text(b,style:const TextStyle(fontWeight:FontWeight.w600)))]));
+import 'login_page.dart';
+
+void main() => runApp(const TruckManagerApp());
+const bg = Color(0xFF08111B);
+
+class TruckManagerApp extends StatefulWidget {
+  const TruckManagerApp({super.key});
+  @override
+  State<TruckManagerApp> createState() => _TruckManagerAppState();
+}
+
+class _TruckManagerAppState extends State<TruckManagerApp> {
+  bool signedIn = false;
+  bool started = false;
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Truck Manager',
+        theme: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: bg,
+          colorScheme: const ColorScheme.dark(primary: green, surface: panel),
+          cardTheme: const CardThemeData(color: panel),
+          inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
+        ),
+        home: !signedIn
+            ? LoginPage(onSignedIn: (name) {
+                truckGameState.playerName = name;
+                setState(() => signedIn = true);
+              })
+            : started
+                ? const Shell()
+                : NewCompanyPage(onStart: () => setState(() => started = true)),
+      );
+}
+
+class Shell extends StatefulWidget {
+  const Shell({super.key});
+  @override
+  State<Shell> createState() => _ShellState();
+}
+
+class _ShellState extends State<Shell> {
+  int page = 0;
+  final pages = const ['Dashboard','Map','Dispatch','Loads','Fleet','Drivers','Terminals','Staff','Safety','Maintenance','Customers','Finance','Reports','Actions','Alerts','Settings'];
+
+  @override
+  void initState() { super.initState(); truckGameState.addListener(_refresh); }
+  @override
+  void dispose() { truckGameState.removeListener(_refresh); super.dispose(); }
+  void _refresh() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              topBar(),
+              Expanded(
+                child: Row(
+                  children: [
+                    NavigationRail(
+                      backgroundColor: const Color(0xFF0C1722),
+                      extended: MediaQuery.sizeOf(context).width > 1200,
+                      selectedIndex: page,
+                      onDestinationSelected: (v) => setState(() => page = v),
+                      destinations: pages.map((p) => NavigationRailDestination(icon: const Icon(Icons.circle_outlined, size: 16), selectedIcon: const Icon(Icons.local_shipping), label: Text(p))).toList(),
+                    ),
+                    Expanded(child: switch (page) {
+                      0 => const DashboardPage(),
+                      1 => const MapPage(),
+                      2 => const DispatchPage(),
+                      3 => const LoadsPage(),
+                      4 => const FleetPage(),
+                      5 => const DriversPage(),
+                      6 => const TerminalsPage(),
+                      7 => const StaffPage(),
+                      8 => const SafetyPage(),
+                      9 => const MaintenancePage(),
+                      10 => const CustomersPage(),
+                      11 => const FinancePage(),
+                      12 => const ReportsPage(),
+                      13 => const ActionCenterPage(),
+                      14 => const NotificationsPage(),
+                      _ => const SettingsPage(),
+                    }),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget topBar() => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        color: const Color(0xFF0D1925),
+        child: Row(
+          children: [
+            const Icon(Icons.local_shipping, color: green),
+            const SizedBox(width: 8),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('TRUCK MANAGER', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              Text('${truckGameState.playerName} • ${truckGameState.companyName}', style: const TextStyle(fontSize: 10, color: Colors.white54)),
+            ]),
+            const Spacer(),
+            Metric('CASH', '\$${truckGameState.cash.toStringAsFixed(2)}'),
+            Metric('DEBT', '\$${truckGameState.debt.toStringAsFixed(2)}'),
+            Metric('LEVEL', '${truckGameState.companyLevel}'),
+            Metric('FLEET', '${truckGameState.truckCount}'),
+            for (final s in [0, 1, 2, 5, 10]) Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: ChoiceChip(label: Text(s == 0 ? 'Ⅱ' : '${s}×'), selected: truckGameState.speed == s, onSelected: (_) => truckGameState.setSpeed(s)),
+            ),
+          ],
+        ),
+      );
+}
+
+class Metric extends StatelessWidget {
+  final String a, b;
+  const Metric(this.a, this.b, {super.key});
+  @override
+  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Column(mainAxisSize: MainAxisSize.min, children: [Text(a, style: const TextStyle(fontSize: 10, color: Colors.white54)), Text(b, style: const TextStyle(fontWeight: FontWeight.bold))]));
+}
+
+class PageFrame extends StatelessWidget {
+  final String title, subtitle;
+  final Widget child;
+  const PageFrame(this.title, this.subtitle, this.child, {super.key});
+  @override
+  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800)), Text(subtitle, style: const TextStyle(color: Colors.white54)), const SizedBox(height: 12), Expanded(child: child)]));
+}
+
+class DispatchPage extends StatelessWidget { const DispatchPage({super.key}); @override Widget build(BuildContext context) => const PageFrame('DISPATCH CENTER','Assign drivers, equipment and freight',Center(child: Text('Buy a truck, hire a driver, then accept freight from the Load Board.'))); }
+class FleetPage extends StatelessWidget { const FleetPage({super.key}); @override Widget build(BuildContext context) => PageFrame('FLEET','Your company equipment',Center(child: Text('Owned power units: ${truckGameState.truckCount}\nUsed Equipment Market is available from Level 1.', textAlign: TextAlign.center))); }
+class DriversPage extends StatelessWidget { const DriversPage({super.key}); @override Widget build(BuildContext context) => PageFrame('DRIVERS','CDL, endorsements, medical cards, HOS and safety',Center(child: Text('Hired drivers: ${truckGameState.driverCount}'))); }
+class LoadsPage extends StatelessWidget { const LoadsPage({super.key}); @override Widget build(BuildContext context) => PageFrame('LOAD BOARD','Available freight across the United States',Center(child: Wrap(spacing: 10, runSpacing: 10, alignment: WrapAlignment.center, children: [FilledButton.icon(onPressed: truckGameState.acceptLoad, icon: const Icon(Icons.add_road), label: const Text('ACCEPT LOAD')), FilledButton.icon(onPressed: truckGameState.activeLoads > 0 ? truckGameState.completeLoad : null, icon: const Icon(Icons.flag), label: const Text('COMPLETE LOAD')), Text('Active loads: ${truckGameState.activeLoads}')]))); }
