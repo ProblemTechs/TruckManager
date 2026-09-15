@@ -5,7 +5,9 @@ class TruckGameState extends ChangeNotifier {
 
   String playerName;
   String companyName = 'ProblemTechs Transport';
-  int cashCents = 50000000;
+  int cashCents = 10000000;
+  int debtCents = 0;
+  int creditLimitCents = 25000000;
   int companyLevel = 1;
   int companyXp = 0;
   int truckCount = 0;
@@ -15,6 +17,32 @@ class TruckGameState extends ChangeNotifier {
   int speed = 0;
 
   double get cash => cashCents / 100;
+  double get debt => debtCents / 100;
+  double get availableCredit => (creditLimitCents - debtCents) / 100;
+  bool get usedMarketAvailable => true;
+
+  void setStartingCapital(int cents) {
+    cashCents = cents;
+    debtCents = 0;
+    notifyListeners();
+  }
+
+  bool borrowMoney(int amountCents) {
+    if (amountCents <= 0 || debtCents + amountCents > creditLimitCents) return false;
+    debtCents += amountCents;
+    cashCents += amountCents;
+    notifyListeners();
+    return true;
+  }
+
+  bool repayLoan(int amountCents) {
+    if (amountCents <= 0 || cashCents < amountCents || debtCents <= 0) return false;
+    final payment = amountCents > debtCents ? debtCents : amountCents;
+    cashCents -= payment;
+    debtCents -= payment;
+    notifyListeners();
+    return true;
+  }
 
   bool purchaseStarterTruck({int priceCents = 12500000}) {
     if (cashCents < priceCents) return false;
