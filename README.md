@@ -1,35 +1,36 @@
 # Truck Manager
 
-Truck Manager is a cross-platform trucking management simulation game planned for Android, iOS, and desktop computers.
+Truck Manager is a cross-platform, nationwide U.S. trucking-company management simulator built with Flutter.
 
-The goal is to build a company-management game inspired by trucking management simulators while giving the player control over drivers, trucks, dispatching, staffing, facilities, and company growth.
+## Frontend v0.1
 
-## Core Game Direction
+Implemented:
+- Dark operations-center management UI
+- Main navigation
+- Simulation speed controls
+- Dispatch Center
+- Fleet/unit selection
+- Player-defined truck unit numbers and nicknames
+- Driver/co-driver status
+- Team-driver automatic rotation indicator
+- HOS and ETA display
+- AUTO / STAFF / MANUAL dispatch status
+- Truck odometer and truck levels
+- Responsive desktop/mobile layout
+- Mock frontend data ready to be replaced by backend simulation data
 
-- Build and manage a trucking company.
-- Hire and manage drivers.
-- Assign one or two drivers to a truck.
-- Automatically switch active drivers when a truck has a two-driver team.
-- Automatically dispatch trucks by default.
-- Allow players to manually dispatch selected drivers/trucks if they prefer.
-- Hire dispatchers and load planners as company staff.
-- Build and upgrade company facilities, including headquarters and additional operational buildings.
-- Expand the fleet, workforce, and company operations over time.
+Reserved modules:
+Dashboard, Loads, Fleet, Drivers, Terminals, Staff, Safety, Maintenance, Customers, Finance, and Reports.
 
-## Platform Targets
+## Game direction
 
-- Android
-- iOS
-- Windows / desktop
-- Additional desktop support can be added as development progresses.
+Version 1 is focused on company management: AI drivers operate the equipment while the player builds and manages a carrier across the United States. Planned systems include pickups, vans, box trucks and Class 8 tractors; nationwide terminals; dispatchers and load planners; driver mileage and endorsements; DOT medical cards and inspections; safety/compliance; maintenance; contracts; finance; and progression from a small carrier to a national fleet.
 
-## Repository Structure
+Player driving mode is intentionally deferred to a later update.
 
-- `docs/` — game design, systems, architecture, and planning documents.
-- `frontend/` — user interface and client-side game work.
-- `backend/` — simulation, APIs, persistence, multiplayer/cloud services if used.
-- `shared/` — shared models, constants, and cross-platform game rules.
+## Run
 
-## Current Status
-
-Initial planning and repository setup.
+```bash
+flutter pub get
+flutter run
+```
