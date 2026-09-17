@@ -34,3 +34,16 @@ Player driving mode is intentionally deferred to a later update.
 flutter pub get
 flutter run
 ```
+
+## Linux desktop icon (Ubuntu/Kali)
+
+After cloning or pulling the repository, install the clickable desktop launcher once:
+
+```bash
+chmod +x scripts/install-desktop-launcher.sh
+./scripts/install-desktop-launcher.sh
+```
+
+Double-click **Truck Manager** on the desktop, or open it from the applications menu.
+The first launch generates Linux desktop support if needed and downloads the Flutter
+packages. Later launches use an existing release build when one is available.

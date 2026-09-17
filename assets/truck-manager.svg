@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16221c"/>
+      <stop offset="1" stop-color="#080c0a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <path d="M82 143h222v184H82z" fill="#27d17f"/>
+  <path d="M304 211h70l58 73v43H304z" fill="#1db66b"/>
+  <path d="M329 230h34l38 48h-72z" fill="#dfffee"/>
+  <path d="M63 327h388v39H63z" fill="#18251e"/>
+  <circle cx="154" cy="367" r="43" fill="#090d0b" stroke="#e9fff4" stroke-width="15"/>
+  <circle cx="374" cy="367" r="43" fill="#090d0b" stroke="#e9fff4" stroke-width="15"/>
+  <path d="M115 181h157v29H115zm0 54h112v29H115z" fill="#0b1710"/>
+  <text x="256" y="466" fill="#e9fff4" font-family="sans-serif" font-size="54" font-weight="800" text-anchor="middle">TRUCK MANAGER</text>
+</svg>
