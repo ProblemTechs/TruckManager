@@ -113,7 +113,16 @@ void main() {
       truckGameState.fleet.single.id,
     );
     await tester.pumpWidget(const MaterialApp(home: Scaffold(body: MapPage())));
-    await tester.pumpAndSettle();
+    // Large asset decoding uses a real isolate; let it run outside the widget clock.
+    for (var attempt = 0; attempt < 10; attempt++) {
+      await tester.runAsync(() async {
+        await rootBundle.loadString('assets/maps/us_states.json');
+        await rootBundle.loadString('assets/maps/weigh_stations.json');
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.pump(const Duration(milliseconds: 100));
+      if (find.textContaining('Partial coverage:').evaluate().isNotEmpty) break;
+    }
     expect(find.textContaining('Partial coverage:'), findsOneWidget);
     expect(find.textContaining('Unit 1001'), findsOneWidget);
     expect(tester.takeException(), isNull);
