@@ -66,6 +66,10 @@ class CompanyState {
     required this.progression,
     required this.simulation,
     required this.revision,
+    this.debtCents = 0,
+    this.truckCount = 0,
+    this.driverCount = 0,
+    this.activeLoads = 0,
   });
 
   final String id;
@@ -76,6 +80,30 @@ class CompanyState {
   final CompanyProgression progression;
   final SimulationClock simulation;
   final int revision;
+  final int debtCents, truckCount, driverCount, activeLoads;
+
+  CompanyState copyWith({
+    int? cashCents,
+    int? debtCents,
+    int? truckCount,
+    int? driverCount,
+    int? activeLoads,
+    CompanyProgression? progression,
+    SimulationClock? simulation,
+  }) => CompanyState(
+    id: id,
+    accountId: accountId,
+    name: name,
+    cashCents: cashCents ?? this.cashCents,
+    reputation: reputation,
+    progression: progression ?? this.progression,
+    simulation: simulation ?? this.simulation,
+    revision: revision + 1,
+    debtCents: debtCents ?? this.debtCents,
+    truckCount: truckCount ?? this.truckCount,
+    driverCount: driverCount ?? this.driverCount,
+    activeLoads: activeLoads ?? this.activeLoads,
+  );
 }
 
 class EquipmentComponent {

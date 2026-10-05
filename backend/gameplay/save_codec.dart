@@ -14,4 +14,8 @@ Map<String, Object?> encodeCompany(CompanyState c) => {
   'gameTimeUtc': c.simulation.gameTimeUtc.toIso8601String(),
   'speed': c.simulation.speed.name,
   'revision': c.revision,
+  'debtCents': c.debtCents,
+  'truckCount': c.truckCount,
+  'driverCount': c.driverCount,
+  'activeLoads': c.activeLoads,
 };

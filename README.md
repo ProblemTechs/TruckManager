@@ -34,3 +34,22 @@ Player driving mode is intentionally deferred to a later update.
 flutter pub get
 flutter run
 ```
+
+## Linux desktop icon (Ubuntu/Kali)
+
+After cloning or pulling the repository, install the clickable desktop launcher once:
+
+```bash
+chmod +x scripts/install-desktop-launcher.sh
+./scripts/install-desktop-launcher.sh
+```
+
+Double-click **Truck Manager** on the desktop, or open it from the applications menu.
+The first launch generates Linux desktop support if needed and downloads the Flutter
+packages. Later launches use an existing release build when one is available.
+
+## Local account and gameplay alpha
+
+Players choose their own username, password, and business name. Sign-in verifies the password; sign-out lets another player create or resume a company during the same app session. Accounts and progress reset when the app closes.
+
+The command processor supports company creation, starter vehicle purchase, hiring, load acceptance/completion, simulation speed and bank actions, with ownership checks, revisions and duplicate protection. See [the current implementation and test scope](docs/player-accounts-and-command-slice.md).
