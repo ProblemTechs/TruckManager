@@ -62,16 +62,25 @@ void main() {
         'fleet test password',
       );
       await truckGameState.selectSignedInAccount();
-      await truckGameState.createCompany('Small Start Freight', 'Realistic');
+      expect(
+        await truckGameState.createCompany('Small Start Freight', 'Realistic'),
+        isTrue,
+        reason: truckGameState.lastError,
+      );
+      expect(truckGameState.cashCents, 5000000);
     });
     await tester.pumpWidget(
       const MaterialApp(home: Scaffold(body: FleetPage(initialTab: 1))),
     );
     await tester.pumpAndSettle();
     expect(find.textContaining('\$8,000.00'), findsOneWidget);
-    await tester.tap(find.text('BUY').first);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('BUY').first);
+      // Backend futures were created in runAsync during account setup.
+      await Future<void>.delayed(Duration.zero);
+    });
     await tester.pumpAndSettle();
-    expect(truckGameState.fleet.length, 1);
+    expect(truckGameState.fleet.length, 1, reason: truckGameState.lastError);
     await tester.tap(find.text('OWNED EQUIPMENT'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Unit 1001'), findsOneWidget);
@@ -84,7 +93,10 @@ void main() {
     expect(find.text('Morgan'), findsOneWidget);
     await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('Unit 1001').last);
+    await tester.runAsync(() async {
+      await tester.tap(find.textContaining('Unit 1001').last);
+      await Future<void>.delayed(Duration.zero);
+    });
     await tester.pumpAndSettle();
     expect(
       truckGameState.drivers.single.truckId,
