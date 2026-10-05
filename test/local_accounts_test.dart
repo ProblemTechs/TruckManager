@@ -1,6 +1,6 @@
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../backend/core/local_accounts.dart';
+import 'package:truck_manager_backend/core/local_accounts.dart';
 
 void main() {
   LocalAccountService service() => LocalAccountService(

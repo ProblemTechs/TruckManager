@@ -1,4 +1,3 @@
-import 'models.dart';
 
 class TripProgress {
   const TripProgress({required this.loadId, required this.totalMiles, required this.completedMiles});

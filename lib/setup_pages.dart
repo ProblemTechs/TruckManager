@@ -78,7 +78,7 @@ class _NewCompanyPageState extends State<NewCompanyPage> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
-                      value: city,
+                      initialValue: city,
                       decoration: const InputDecoration(
                         labelText: 'Starting city',
                       ),
@@ -101,7 +101,7 @@ class _NewCompanyPageState extends State<NewCompanyPage> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
-                      value: difficulty,
+                      initialValue: difficulty,
                       decoration: const InputDecoration(
                         labelText: 'Economy difficulty',
                       ),
@@ -114,7 +114,7 @@ class _NewCompanyPageState extends State<NewCompanyPage> {
                     ),
                     const SizedBox(height: 14),
                     DropdownButtonFormField<String>(
-                      value: strategy,
+                      initialValue: strategy,
                       decoration: const InputDecoration(
                         labelText: 'Starting business',
                       ),

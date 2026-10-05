@@ -13,3 +13,5 @@ Each command checks ownership, expected revision, supported type, resource const
 Repositories must be shared with one processor in this local process. The repository/ledger/event writes assume non-failing in-memory implementations; a future durable store requires atomic transactions and session authorization at the transport boundary. There is no persistence, remote authentication, cloud sync transport, or subscription implementation in this slice.
 
 Validation: `flutter pub get`, `flutter analyze`, `flutter test`. Tests cover custom names, setup validation, password verification, duplicate registration, account isolation, playable loop, duplicate deliveries, revisions/concurrency, ownership, bank limits, malformed payloads and event replay. Test hashers use 10 iterations only for service-unit test speed; the app default remains 600,000.
+
+The backend is a local Dart package (`backend/pubspec.yaml`) with canonical libraries in `backend/lib/core`. Existing `backend/core` paths remain compatibility exports. Flutter uses package imports so its analyzer and compiler resolve the shared core correctly.

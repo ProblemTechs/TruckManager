@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../backend/core/backend_core.dart';
+import 'package:truck_manager_backend/core/backend_core.dart';
 
 void main() {
   late InMemoryCompanyRepository companies;

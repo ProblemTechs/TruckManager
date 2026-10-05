@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../backend/core/backend_core.dart';
-import '../backend/core/local_accounts.dart';
+import 'package:truck_manager_backend/core/backend_core.dart';
+import 'package:truck_manager_backend/core/local_accounts.dart';
 
 /// UI adapter: the command processor owns all gameplay mutations.
 class TruckGameState extends ChangeNotifier {
@@ -36,6 +36,7 @@ class TruckGameState extends ChangeNotifier {
   bool get paused => speed == 0;
   double get cash => cashCents / 100;
   double get debt => debtCents / 100;
+  int get creditLimitCents => 25000000;
   double get availableCredit => (25000000 - debtCents) / 100;
   bool get usedMarketAvailable => true;
 

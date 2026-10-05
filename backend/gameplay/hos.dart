@@ -1,4 +1,3 @@
-import 'models.dart';
 
 class HosClock {
   const HosClock({this.drivingMinutes = 0, this.onDutyMinutes = 0, this.cycleMinutes = 0, this.breakMinutes = 0});

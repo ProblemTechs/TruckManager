@@ -16,3 +16,9 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - name: Install Linux build dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+      - name: Generate Linux runner
+        run: flutter create --platforms=linux --project-name=truck_manager .
+      - name: Build Linux game
+        run: flutter build linux --release

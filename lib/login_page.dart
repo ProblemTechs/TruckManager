@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../backend/core/local_accounts.dart';
+import 'package:truck_manager_backend/core/local_accounts.dart';
 import 'game_state.dart';
 import 'operations_pages.dart';
 
