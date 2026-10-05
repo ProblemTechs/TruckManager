@@ -98,6 +98,16 @@ void main() {
       await Future<void>.delayed(Duration.zero);
     });
     await tester.pumpAndSettle();
+    // Dropdown selection completes after its route's closing animation.
+    // Flush both the widget clock and the real backend future queue.
+    for (
+      var attempt = 0;
+      attempt < 10 && truckGameState.drivers.single.truckId == null;
+      attempt++
+    ) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+    }
     expect(
       truckGameState.drivers.single.truckId,
       truckGameState.fleet.single.id,
