@@ -1,3 +1,4 @@
+import 'formatters.dart';
 import 'package:flutter/material.dart';
 import 'operations_pages.dart';
 import 'game_state.dart';
@@ -194,7 +195,11 @@ class _NewCompanyPageState extends State<NewCompanyPage> {
                                   error = null;
                                 });
                                 final accepted = await truckGameState
-                                    .createCompany(company.text, difficulty);
+                                    .createCompany(
+                                      company.text,
+                                      difficulty,
+                                      startingCity: city,
+                                    );
                                 if (!mounted) return;
                                 setState(() {
                                   busy = false;
@@ -241,9 +246,9 @@ class SettingsPage extends StatelessWidget {
             runSpacing: 8,
             children: [
               FilledButton.icon(
-                onPressed: () => truckGameState.purchaseStarterTruck(),
+                onPressed: () => truckGameState.purchaseVehicle('used-pickup'),
                 icon: const Icon(Icons.local_shipping),
-                label: const Text('Buy Cargo Van \$48,000'),
+                label: const Text('Buy Used Pickup \$8,000'),
               ),
               FilledButton.icon(
                 onPressed: () => truckGameState.hireDriver(),
@@ -255,10 +260,10 @@ class SettingsPage extends StatelessWidget {
         ),
       ]),
       Box('Bank & Credit', Icons.account_balance, [
-        row('Debt', '\$${truckGameState.debt.toStringAsFixed(2)}'),
+        row('Debt', money(truckGameState.debtCents)),
         row(
           'Available credit',
-          '\$${truckGameState.availableCredit.toStringAsFixed(2)}',
+          money(truckGameState.creditLimitCents - truckGameState.debtCents),
         ),
         Padding(
           padding: const EdgeInsets.all(8),

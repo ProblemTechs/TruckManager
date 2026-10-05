@@ -5,3 +5,4 @@ export 'models.dart';
 export 'progression.dart';
 export 'repository.dart';
 export 'sync.dart';
+export 'vehicle_catalog.dart';

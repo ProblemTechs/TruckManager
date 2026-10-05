@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'models.dart';
 import 'repository.dart';
 import 'progression.dart';
+import 'vehicle_catalog.dart';
 
 class CommandResult {
   const CommandResult({
@@ -65,6 +67,9 @@ class CommandProcessor {
         throw RevisionConflict(command.expectedRevision, 0);
       final name = command.payload['name'];
       final difficulty = command.payload['difficulty'];
+      final startingCity = command.payload['startingCity'] ?? 'Dallas, TX';
+      if (startingCity is! String || findGameCity(startingCity) == null)
+        return reject('Choose a valid starting city.');
       final cash = switch (difficulty) {
         'Relaxed' => 25000000,
         'Standard' => 10000000,
@@ -83,6 +88,7 @@ class CommandProcessor {
         id: command.companyId,
         accountId: command.accountId,
         name: name.trim(),
+        startingCity: startingCity,
         cashCents: cash,
         reputation: 50,
         progression: const CompanyProgression(level: 1, xp: 0),
@@ -110,41 +116,171 @@ class CommandProcessor {
           );
           eventType = 'simulationSpeedChanged';
         case 'purchaseVehicle':
-          // Starter catalogue price; client-supplied prices are never used.
-          const price = 4800000;
-          if (company.cashCents < price)
-            return reject('Not enough cash to buy the starter cargo van.');
+          final offerId = command.payload['catalogId'] ?? 'new-van';
+          final offer = offerId is String ? findVehicleOffer(offerId) : null;
+          if (offer == null)
+            return reject('Choose a vehicle from the catalogue.');
+          if (company.cashCents < offer.priceCents)
+            return reject('Not enough cash to buy this vehicle.');
+          final city = findGameCity(company.startingCity)!;
+          final vehicle = FleetVehicle(
+            id: '${company.id}:vehicle:${command.commandId}',
+            unitNumber: '${1001 + company.fleet.length}',
+            catalogId: offer.id,
+            name: offer.name,
+            vehicleClass: offer.vehicleClass,
+            used: offer.used,
+            year: offer.year,
+            purchasePriceCents: offer.priceCents,
+            mileage: offer.mileage,
+            conditionPercent: offer.conditionPercent,
+            city: city.name,
+            latitude: city.latitude,
+            longitude: city.longitude,
+          );
           next = company.copyWith(
-            cashCents: company.cashCents - price,
-            truckCount: company.truckCount + 1,
+            cashCents: company.cashCents - offer.priceCents,
+            fleet: [...company.fleet, vehicle],
           );
           eventType = 'vehiclePurchased';
         case 'hireEmployee':
           if (company.cashCents < 100000)
             return reject('Not enough cash to hire a driver.');
+          final enteredName = command.payload['name'];
+          if (enteredName != null &&
+              (enteredName is! String ||
+                  enteredName.trim().isEmpty ||
+                  enteredName.trim().length > 60)) {
+            return reject('Enter a driver name (1–60 characters).');
+          }
+          final driver = CompanyDriver(
+            id: '${company.id}:driver:${command.commandId}',
+            name: enteredName is String
+                ? enteredName.trim()
+                : 'Driver ${company.drivers.length + 1}',
+          );
           next = company.copyWith(
             cashCents: company.cashCents - 100000,
-            driverCount: company.driverCount + 1,
+            drivers: [...company.drivers, driver],
           );
           eventType = 'employeeHired';
+        case 'assignDriver':
+          final driverId = command.payload['driverId'];
+          final truckId = command.payload['truckId'];
+          final index = company.drivers.indexWhere((d) => d.id == driverId);
+          if (index < 0 ||
+              (truckId != null && !company.fleet.any((t) => t.id == truckId)))
+            return reject('Choose a driver and vehicle owned by this company.');
+          if (company.loads.any(
+            (l) =>
+                !l.delivered &&
+                (l.driverId == driverId || l.truckId == truckId),
+          ))
+            return reject('Cannot change an assignment during an active load.');
+          if (truckId != null &&
+              company.drivers.any(
+                (d) => d.id != driverId && d.truckId == truckId,
+              ))
+            return reject('That vehicle already has a driver.');
+          final updated = [...company.drivers];
+          updated[index] = updated[index].assignedTo(truckId as String?);
+          next = company.copyWith(drivers: updated);
+          eventType = 'driverAssigned';
         case 'acceptLoad':
-          if (company.activeLoads >= company.truckCount ||
-              company.activeLoads >= company.driverCount) {
-            return reject('A free vehicle and driver are required.');
+          final freeDrivers = company.drivers.where(
+            (d) =>
+                !company.loads.any((l) => !l.delivered && l.driverId == d.id),
+          );
+          CompanyDriver? driver;
+          FleetVehicle? truck;
+          // Use an existing free assignment first, then assign an unassigned driver automatically.
+          for (final candidate in freeDrivers) {
+            if (candidate.truckId == null) continue;
+            for (final vehicle in company.fleet) {
+              if (vehicle.id == candidate.truckId &&
+                  !company.loads.any(
+                    (l) => !l.delivered && l.truckId == vehicle.id,
+                  )) {
+                driver = candidate;
+                truck = vehicle;
+                break;
+              }
+            }
+            if (truck != null) break;
           }
-          next = company.copyWith(activeLoads: company.activeLoads + 1);
+          if (truck == null) {
+            for (final candidate in freeDrivers.where(
+              (d) => d.truckId == null,
+            )) {
+              for (final vehicle in company.fleet) {
+                if (!company.drivers.any((d) => d.truckId == vehicle.id) &&
+                    !company.loads.any(
+                      (l) => !l.delivered && l.truckId == vehicle.id,
+                    )) {
+                  driver = candidate;
+                  truck = vehicle;
+                  break;
+                }
+              }
+              if (truck != null) break;
+            }
+          }
+          if (truck == null || driver == null)
+            return reject('A free vehicle and driver are required.');
+          final origin = findGameCity(truck.city)!;
+          final destinations =
+              gameCities.where((c) => c.name != truck!.city).toList()..sort(
+                (a, b) => _distanceMiles(
+                  origin,
+                  a,
+                ).compareTo(_distanceMiles(origin, b)),
+              );
+          final destination = destinations.first;
+          final load = CompanyLoad(
+            id: '${company.id}:load:${command.commandId}',
+            truckId: truck.id,
+            driverId: driver.id,
+            origin: truck.city,
+            destination: destination.name,
+            miles: _distanceMiles(origin, destination),
+          );
+          final assigned = driver.assignedTo(truck.id);
+          next = company.copyWith(
+            loads: [...company.loads, load],
+            drivers: company.drivers
+                .map((d) => d.id == assigned.id ? assigned : d)
+                .toList(),
+          );
           eventType = 'loadStatusChanged';
         case 'completeLoad':
-          if (company.activeLoads == 0)
-            return reject('No active load to complete.');
+          final active = company.loads.where((l) => !l.delivered);
+          final requestedId = command.payload['loadId'];
+          final matches = active.where(
+            (l) => requestedId == null || l.id == requestedId,
+          );
+          if (matches.isEmpty) return reject('No active load to complete.');
+          final load = matches.first;
+          final destination = findGameCity(load.destination)!;
           final xp = company.progression.xp + 100;
           var level = company.progression.level;
           while (xp >= xpRequiredForLevel(level + 1)) {
             level++;
           }
           next = company.copyWith(
-            activeLoads: company.activeLoads - 1,
-            cashCents: company.cashCents + 250000,
+            cashCents: company.cashCents + load.revenueCents,
+            loads: company.loads
+                .map((l) => l.id == load.id ? l.complete() : l)
+                .toList(),
+            fleet: company.fleet
+                .map(
+                  (t) => t.id == load.truckId
+                      ? t.movedTo(destination, load.miles)
+                      : t,
+                )
+                .toList(),
+            drivers: company.drivers
+                .map((d) => d.id == load.driverId ? d.addMiles(load.miles) : d)
+                .toList(),
             progression: CompanyProgression(level: level, xp: xp),
           );
           eventType = 'loadStatusChanged';
@@ -199,4 +335,16 @@ class CommandProcessor {
       events: List.unmodifiable([event]),
     );
   }
+}
+
+// Approximate route miles for the starter load; not turn-by-turn road routing.
+int _distanceMiles(GameCity a, GameCity b) {
+  final lat1 = a.latitude * math.pi / 180;
+  final lat2 = b.latitude * math.pi / 180;
+  final dlat = lat2 - lat1;
+  final dlon = (b.longitude - a.longitude) * math.pi / 180;
+  final h =
+      math.pow(math.sin(dlat / 2), 2) +
+      math.cos(lat1) * math.cos(lat2) * math.pow(math.sin(dlon / 2), 2);
+  return (3959 * 2 * math.asin(math.sqrt(h)) * 1.2).round();
 }

@@ -1,18 +1,302 @@
+import 'fleet_pages.dart';
+import 'formatters.dart';
 import 'package:flutter/material.dart';
 import 'game_state.dart';
 
-const green=Color(0xFF35D07F), panel=Color(0xFF101C28);
-Widget row(String a,String b)=>Padding(padding:const EdgeInsets.symmetric(vertical:7),child:Row(children:[SizedBox(width:155,child:Text(a,style:const TextStyle(color:Colors.white54))),Expanded(child:Text(b,style:const TextStyle(fontWeight:FontWeight.w600)))]));
-class OpsPage extends StatelessWidget{final String title,subtitle;final List<Widget> children;const OpsPage(this.title,this.subtitle,this.children,{super.key});@override Widget build(BuildContext c)=>Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:25,fontWeight:FontWeight.w800)),Text(subtitle,style:const TextStyle(color:Colors.white54)),const SizedBox(height:12),Expanded(child:GridView.extent(maxCrossAxisExtent:520,childAspectRatio:1.65,children:children))]));}
-class Box extends StatelessWidget{final String title;final IconData icon;final List<Widget> rows;const Box(this.title,this.icon,this.rows,{super.key});@override Widget build(BuildContext c)=>Card(child:Padding(padding:const EdgeInsets.all(16),child:ListView(children:[Row(children:[Icon(icon,color:green),const SizedBox(width:8),Text(title,style:const TextStyle(fontSize:18,fontWeight:FontWeight.bold))]),const Divider(),...rows])));}
+const green = Color(0xFF35D07F), panel = Color(0xFF101C28);
+Widget row(String a, String b) => Padding(
+  padding: const EdgeInsets.symmetric(vertical: 7),
+  child: Row(
+    children: [
+      SizedBox(
+        width: 155,
+        child: Text(a, style: const TextStyle(color: Colors.white54)),
+      ),
+      Expanded(
+        child: Text(b, style: const TextStyle(fontWeight: FontWeight.w600)),
+      ),
+    ],
+  ),
+);
 
-class DashboardPage extends StatelessWidget{const DashboardPage({super.key});@override Widget build(BuildContext c)=>OpsPage('COMPANY DASHBOARD','Build • Dispatch • Grow',[Box('Company Overview',Icons.business,[row('Company',truckGameState.companyName),row('Cash','\$${truckGameState.cash.toStringAsFixed(2)}'),row('Debt','\$${truckGameState.debt.toStringAsFixed(2)}'),row('Company level','${truckGameState.companyLevel}'),row('Company XP','${truckGameState.companyXp}')]),Box('Operations',Icons.local_shipping,[row('Power units','${truckGameState.truckCount}'),row('Drivers','${truckGameState.driverCount}'),row('Active loads','${truckGameState.activeLoads}'),row('Dispatch','Management mode'),row('Used market','Available')]),Box('Quick Actions',Icons.flash_on,[Padding(padding:const EdgeInsets.all(6),child:Wrap(spacing:8,runSpacing:8,children:[FilledButton.icon(onPressed:()=>truckGameState.purchaseStarterTruck(),icon:const Icon(Icons.local_shipping),label:const Text('Buy Starter Truck')),FilledButton.icon(onPressed:()=>truckGameState.hireDriver(),icon:const Icon(Icons.person_add),label:const Text('Hire Driver')),FilledButton.icon(onPressed:truckGameState.acceptLoad,icon:const Icon(Icons.route),label:const Text('Accept Load'))]))]),Box('Growth',Icons.trending_up,[row('Starting market','Nationwide U.S.'),row('Used equipment','Level 1'),row('Bank credit','\$${truckGameState.availableCredit.toStringAsFixed(2)}'),row('Next objective',truckGameState.truckCount==0?'Acquire first power unit':'Put equipment to work')])]);}
+class OpsPage extends StatelessWidget {
+  final String title, subtitle;
+  final List<Widget> children;
+  const OpsPage(this.title, this.subtitle, this.children, {super.key});
+  @override
+  Widget build(BuildContext c) => Padding(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800),
+        ),
+        Text(subtitle, style: const TextStyle(color: Colors.white54)),
+        const SizedBox(height: 12),
+        Expanded(
+          child: GridView.extent(
+            maxCrossAxisExtent: 520,
+            childAspectRatio: 1.65,
+            children: children,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
-class FinancePage extends StatelessWidget{const FinancePage({super.key});@override Widget build(BuildContext c)=>OpsPage('FINANCE & BANK','Cash, credit, borrowing and company debt',[Box('Company Accounts',Icons.account_balance_wallet,[row('Cash','\$${truckGameState.cash.toStringAsFixed(2)}'),row('Loan balance','\$${truckGameState.debt.toStringAsFixed(2)}'),row('Credit limit','\$${(truckGameState.creditLimitCents/100).toStringAsFixed(2)}'),row('Available credit','\$${truckGameState.availableCredit.toStringAsFixed(2)}')]),Box('Truck Manager Bank',Icons.account_balance,[const Padding(padding:EdgeInsets.only(bottom:8),child:Text('Borrowing is available from the start. Interest, credit score and equipment-secured financing will be expanded before release.')),Wrap(spacing:8,runSpacing:8,children:[FilledButton(onPressed:()=>truckGameState.borrowMoney(2500000),child:const Text('Borrow \$25,000')),FilledButton(onPressed:()=>truckGameState.borrowMoney(5000000),child:const Text('Borrow \$50,000')),FilledButton.tonal(onPressed:()=>truckGameState.repayLoan(1000000),child:const Text('Repay \$10,000'))])]),Box('Financing Roadmap',Icons.payments,[row('Equipment loans','Enabled next'),row('Leasing','Enabled next'),row('Credit rating','Planned'),row('Late payments','Planned'),row('Repossession','Planned')])]);}
+class Box extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Widget> rows;
+  const Box(this.title, this.icon, this.rows, {super.key});
+  @override
+  Widget build(BuildContext c) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: ListView(
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: green),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+          ...rows,
+        ],
+      ),
+    ),
+  );
+}
 
-class TerminalsPage extends StatelessWidget{const TerminalsPage({super.key});@override Widget build(BuildContext c)=>OpsPage('TERMINALS & FACILITIES','Build a nationwide terminal network',[Box('Headquarters',Icons.apartment,[row('Status','Starting HQ'),row('Level','1'),row('Expansion','Available as company grows')]),Box('Expansion',Icons.add_business,[row('Coverage','United States'),row('Terminals','Purchase / lease'),row('Upgrades','Parking, shop, fuel, offices')])]);}
-class StaffPage extends StatelessWidget{const StaffPage({super.key});@override Widget build(BuildContext c)=>OpsPage('STAFF & OPERATIONS','Hire employees and delegate daily work',[Box('Operations Staff',Icons.groups,[row('Dispatchers','0'),row('Load planners','0'),row('Mechanics','0'),row('Safety staff','0'),row('Automation','Unlock through staffing')])]);}
-class SafetyPage extends StatelessWidget{const SafetyPage({super.key});@override Widget build(BuildContext c)=>OpsPage('SAFETY & COMPLIANCE','DOT compliance and company safety',[Box('Driver Compliance',Icons.badge,[row('DOT medical cards','Tracked'),row('CDL endorsements','Tracked'),row('HOS','Tracked'),row('Training','Tracked')]),Box('DOT Inspections',Icons.fact_check,[row('Roadside inspections','Enabled'),row('Vehicle violations','Enabled'),row('Out of service','Enabled'),row('Safety rating','Company-wide')])]);}
-class MaintenancePage extends StatelessWidget{const MaintenancePage({super.key});@override Widget build(BuildContext c)=>OpsPage('MAINTENANCE','Preventive maintenance, repairs and equipment health',[Box('Fleet Maintenance',Icons.build,[row('Owned units','${truckGameState.truckCount}'),row('PM schedules','Tracked'),row('Roadside repairs','Supported'),row('Company shops','Terminal upgrade')])]);}
-class CustomersPage extends StatelessWidget{const CustomersPage({super.key});@override Widget build(BuildContext c)=>OpsPage('CUSTOMERS & CONTRACTS','Spot freight and dedicated contracts',[Box('Spot Market',Icons.route,[row('Availability','Level 1'),row('Coverage','Nationwide'),row('Active loads','${truckGameState.activeLoads}')]),Box('Dedicated Contracts',Icons.handshake,[row('Status','Progression feature'),row('Requirements','Fleet and reputation')])]);}
-class ReportsPage extends StatelessWidget{const ReportsPage({super.key});@override Widget build(BuildContext c)=>OpsPage('REPORTS','Company performance and operating reports',[Box('Company Snapshot',Icons.analytics,[row('Cash','\$${truckGameState.cash.toStringAsFixed(2)}'),row('Debt','\$${truckGameState.debt.toStringAsFixed(2)}'),row('Fleet','${truckGameState.truckCount}'),row('Drivers','${truckGameState.driverCount}'),row('XP','${truckGameState.companyXp}')])]);}
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+  @override
+  Widget build(BuildContext c) =>
+      OpsPage('COMPANY DASHBOARD', 'Build • Dispatch • Grow', [
+        Box('Company Overview', Icons.business, [
+          row('Company', truckGameState.companyName),
+          row('Cash', money(truckGameState.cashCents)),
+          row('Debt', money(truckGameState.debtCents)),
+          row('Company level', '${truckGameState.companyLevel}'),
+          row('Company XP', '${truckGameState.companyXp}'),
+        ]),
+        Box('Operations', Icons.local_shipping, [
+          row('Power units', '${truckGameState.truckCount}'),
+          row('Drivers', '${truckGameState.driverCount}'),
+          row('Active loads', '${truckGameState.activeLoads}'),
+          row('Dispatch', 'Management mode'),
+          row('Used market', 'Available'),
+        ]),
+        Box('Quick Actions', Icons.flash_on, [
+          Padding(
+            padding: const EdgeInsets.all(6),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: () => Navigator.of(c).push(
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: const Text('Vehicle market')),
+                        body: const SafeArea(child: FleetPage(initialTab: 1)),
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.local_shipping),
+                  label: const Text('Buy Used / New Vehicles'),
+                ),
+                FilledButton.icon(
+                  onPressed: () => truckGameState.hireDriver(),
+                  icon: const Icon(Icons.person_add),
+                  label: const Text('Hire Driver'),
+                ),
+                FilledButton.icon(
+                  onPressed: truckGameState.acceptLoad,
+                  icon: const Icon(Icons.route),
+                  label: const Text('Accept Load'),
+                ),
+              ],
+            ),
+          ),
+        ]),
+        Box('Growth', Icons.trending_up, [
+          row('Starting market', 'Nationwide U.S.'),
+          row('Used equipment', 'Level 1'),
+          row(
+            'Bank credit',
+            money(truckGameState.creditLimitCents - truckGameState.debtCents),
+          ),
+          row(
+            'Next objective',
+            truckGameState.truckCount == 0
+                ? 'Acquire first power unit'
+                : 'Put equipment to work',
+          ),
+        ]),
+      ]);
+}
+
+class FinancePage extends StatelessWidget {
+  const FinancePage({super.key});
+  @override
+  Widget build(
+    BuildContext c,
+  ) => OpsPage('FINANCE & BANK', 'Cash, credit, borrowing and company debt', [
+    Box('Company Accounts', Icons.account_balance_wallet, [
+      row('Cash', money(truckGameState.cashCents)),
+      row('Loan balance', money(truckGameState.debtCents)),
+      row('Credit limit', money(truckGameState.creditLimitCents)),
+      row(
+        'Available credit',
+        money(truckGameState.creditLimitCents - truckGameState.debtCents),
+      ),
+    ]),
+    Box('Truck Manager Bank', Icons.account_balance, [
+      const Padding(
+        padding: EdgeInsets.only(bottom: 8),
+        child: Text(
+          'Borrowing is available from the start. Interest, credit score and equipment-secured financing will be expanded before release.',
+        ),
+      ),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          FilledButton(
+            onPressed: () => truckGameState.borrowMoney(2500000),
+            child: const Text('Borrow \$25,000'),
+          ),
+          FilledButton(
+            onPressed: () => truckGameState.borrowMoney(5000000),
+            child: const Text('Borrow \$50,000'),
+          ),
+          FilledButton.tonal(
+            onPressed: () => truckGameState.repayLoan(1000000),
+            child: const Text('Repay \$10,000'),
+          ),
+        ],
+      ),
+    ]),
+    Box('Financing Roadmap', Icons.payments, [
+      row('Equipment loans', 'Enabled next'),
+      row('Leasing', 'Enabled next'),
+      row('Credit rating', 'Planned'),
+      row('Late payments', 'Planned'),
+      row('Repossession', 'Planned'),
+    ]),
+  ]);
+}
+
+class TerminalsPage extends StatelessWidget {
+  const TerminalsPage({super.key});
+  @override
+  Widget build(BuildContext c) =>
+      OpsPage('TERMINALS & FACILITIES', 'Build a nationwide terminal network', [
+        Box('Headquarters', Icons.apartment, [
+          row('Status', 'Starting HQ'),
+          row('Level', '1'),
+          row('Expansion', 'Available as company grows'),
+        ]),
+        Box('Expansion', Icons.add_business, [
+          row('Coverage', 'United States'),
+          row('Terminals', 'Purchase / lease'),
+          row('Upgrades', 'Parking, shop, fuel, offices'),
+        ]),
+      ]);
+}
+
+class StaffPage extends StatelessWidget {
+  const StaffPage({super.key});
+  @override
+  Widget build(BuildContext c) =>
+      OpsPage('STAFF & OPERATIONS', 'Hire employees and delegate daily work', [
+        Box('Operations Staff', Icons.groups, [
+          row('Dispatchers', '0'),
+          row('Load planners', '0'),
+          row('Mechanics', '0'),
+          row('Safety staff', '0'),
+          row('Automation', 'Unlock through staffing'),
+        ]),
+      ]);
+}
+
+class SafetyPage extends StatelessWidget {
+  const SafetyPage({super.key});
+  @override
+  Widget build(BuildContext c) =>
+      OpsPage('SAFETY & COMPLIANCE', 'DOT compliance and company safety', [
+        Box('Driver Compliance', Icons.badge, [
+          row('DOT medical cards', 'Tracked'),
+          row('CDL endorsements', 'Tracked'),
+          row('HOS', 'Tracked'),
+          row('Training', 'Tracked'),
+        ]),
+        Box('DOT Inspections', Icons.fact_check, [
+          row('Roadside inspections', 'Enabled'),
+          row('Vehicle violations', 'Enabled'),
+          row('Out of service', 'Enabled'),
+          row('Safety rating', 'Company-wide'),
+        ]),
+      ]);
+}
+
+class MaintenancePage extends StatelessWidget {
+  const MaintenancePage({super.key});
+  @override
+  Widget build(BuildContext c) => OpsPage(
+    'MAINTENANCE',
+    'Preventive maintenance, repairs and equipment health',
+    [
+      Box('Fleet Maintenance', Icons.build, [
+        row('Owned units', '${truckGameState.truckCount}'),
+        row('PM schedules', 'Tracked'),
+        row('Roadside repairs', 'Supported'),
+        row('Company shops', 'Terminal upgrade'),
+      ]),
+    ],
+  );
+}
+
+class CustomersPage extends StatelessWidget {
+  const CustomersPage({super.key});
+  @override
+  Widget build(BuildContext c) =>
+      OpsPage('CUSTOMERS & CONTRACTS', 'Spot freight and dedicated contracts', [
+        Box('Spot Market', Icons.route, [
+          row('Availability', 'Level 1'),
+          row('Coverage', 'Nationwide'),
+          row('Active loads', '${truckGameState.activeLoads}'),
+        ]),
+        Box('Dedicated Contracts', Icons.handshake, [
+          row('Status', 'Progression feature'),
+          row('Requirements', 'Fleet and reputation'),
+        ]),
+      ]);
+}
+
+class ReportsPage extends StatelessWidget {
+  const ReportsPage({super.key});
+  @override
+  Widget build(BuildContext c) =>
+      OpsPage('REPORTS', 'Company performance and operating reports', [
+        Box('Company Snapshot', Icons.analytics, [
+          row('Cash', money(truckGameState.cashCents)),
+          row('Debt', money(truckGameState.debtCents)),
+          row('Fleet', '${truckGameState.truckCount}'),
+          row('Drivers', '${truckGameState.driverCount}'),
+          row('XP', '${truckGameState.companyXp}'),
+        ]),
+      ]);
+}

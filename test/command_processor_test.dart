@@ -58,6 +58,102 @@ void main() {
       expect(result.company!.simulation.gameTimeUtc.isUtc, isTrue);
     },
   );
+  test('used starter purchase creates one priced unit even on retry', () async {
+    await create(difficulty: 'Realistic');
+    final buy = command(
+      'purchaseVehicle',
+      1,
+      payload: {'catalogId': 'used-pickup', 'priceCents': 1},
+    );
+    final result = await processor.execute(buy);
+    final c = result.company!;
+    expect(c.cashCents, 4200000);
+    expect(c.fleet.single.used, isTrue);
+    expect(c.fleet.single.purchasePriceCents, 800000);
+    expect(c.fleet.single.city, 'Dallas, TX');
+    expect((await processor.execute(buy)).company!.fleet.length, 1);
+    expect(() => c.fleet.clear(), throwsUnsupportedError);
+    expect(
+      (await processor.execute(
+        command('purchaseVehicle', 2, payload: {'catalogId': 'made-up-truck'}),
+      )).accepted,
+      isFalse,
+    );
+  });
+  test(
+    'driver assignments reject foreign units, double booking and busy changes',
+    () async {
+      await create();
+      final purchased = await processor.execute(
+        command('purchaseVehicle', 1, payload: {'catalogId': 'used-van'}),
+      );
+      final truck = purchased.company!.fleet.single;
+      final hired = await processor.execute(
+        command('hireEmployee', 2, payload: {'name': 'Morgan'}),
+      );
+      final driver = hired.company!.drivers.single;
+      expect(driver.name, 'Morgan');
+      expect(
+        (await processor.execute(
+          command(
+            'assignDriver',
+            3,
+            payload: {
+              'driverId': driver.id,
+              'truckId': 'another-company-truck',
+            },
+          ),
+        )).accepted,
+        isFalse,
+      );
+      await processor.execute(
+        command(
+          'assignDriver',
+          3,
+          payload: {'driverId': driver.id, 'truckId': truck.id},
+        ),
+      );
+      final second = await processor.execute(command('hireEmployee', 4));
+      expect(
+        (await processor.execute(
+          command(
+            'assignDriver',
+            5,
+            payload: {
+              'driverId': second.company!.drivers.last.id,
+              'truckId': truck.id,
+            },
+          ),
+        )).accepted,
+        isFalse,
+      );
+      final dispatched = await processor.execute(command('acceptLoad', 5));
+      final load = dispatched.company!.loads.single;
+      expect(load.driverId, driver.id);
+      expect(load.truckId, truck.id);
+      expect(
+        (await processor.execute(
+          command(
+            'assignDriver',
+            6,
+            payload: {'driverId': driver.id, 'truckId': null},
+          ),
+        )).accepted,
+        isFalse,
+      );
+      final finished = (await processor.execute(
+        command('completeLoad', 6, payload: {'loadId': load.id}),
+      )).company!;
+      expect(finished.fleet.single.city, load.destination);
+      expect(
+        finished.fleet.single.latitude,
+        findGameCity(load.destination)!.latitude,
+      );
+      expect(finished.fleet.single.mileage, truck.mileage + load.miles);
+      expect(finished.drivers.first.milesDriven, load.miles);
+      expect(dispatched.company!.fleet.single.city, truck.city);
+    },
+  );
   test('blank name and invalid difficulty do not create or emit', () async {
     final result = await processor.execute(
       command(

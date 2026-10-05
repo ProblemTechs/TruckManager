@@ -18,6 +18,10 @@ class TruckGameState extends ChangeNotifier {
   String? lastError;
   String get playerName => accounts.currentAccount?.displayName ?? '';
   String get companyName => _company?.name ?? '';
+  String get startingCity => _company?.startingCity ?? 'Dallas, TX';
+  List<FleetVehicle> get fleet => _company?.fleet ?? const [];
+  List<CompanyDriver> get drivers => _company?.drivers ?? const [];
+  List<CompanyLoad> get loads => _company?.loads ?? const [];
   bool get hasCompany => _company != null;
   int get cashCents => _company?.cashCents ?? 0;
   int get debtCents => _company?.debtCents ?? 0;
@@ -56,16 +60,29 @@ class TruckGameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> createCompany(String name, String difficulty) =>
-      _send('createCompany', {'name': name, 'difficulty': difficulty});
+  Future<bool> createCompany(
+    String name,
+    String difficulty, {
+    String startingCity = 'Dallas, TX',
+  }) => _send('createCompany', {
+    'name': name,
+    'difficulty': difficulty,
+    'startingCity': startingCity,
+  });
   Future<bool> borrowMoney(int amountCents) =>
       _send('borrowMoney', {'amountCents': amountCents});
   Future<bool> repayLoan(int amountCents) =>
       _send('repayLoan', {'amountCents': amountCents});
   Future<bool> purchaseStarterTruck() => _send('purchaseVehicle');
-  Future<bool> hireDriver() => _send('hireEmployee');
+  Future<bool> hireDriver({String? name}) =>
+      _send('hireEmployee', {if (name != null) 'name': name});
+  Future<bool> purchaseVehicle(String catalogId) =>
+      _send('purchaseVehicle', {'catalogId': catalogId});
+  Future<bool> assignDriver(String driverId, String? truckId) =>
+      _send('assignDriver', {'driverId': driverId, 'truckId': truckId});
   Future<bool> acceptLoad() => _send('acceptLoad');
-  Future<bool> completeLoad() => _send('completeLoad');
+  Future<bool> completeLoad({String? loadId}) =>
+      _send('completeLoad', {if (loadId != null) 'loadId': loadId});
   Future<bool> setSpeed(int multiplier) => _send('setSimulationSpeed', {
     'speed': {0: 'PAUSED', 1: 'X1', 2: 'X2', 5: 'X5', 10: 'X10'}[multiplier],
   });

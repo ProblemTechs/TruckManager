@@ -57,7 +57,7 @@ class CompanyProgression {
 }
 
 class CompanyState {
-  const CompanyState({
+  CompanyState({
     required this.id,
     required this.accountId,
     required this.name,
@@ -67,43 +67,161 @@ class CompanyState {
     required this.simulation,
     required this.revision,
     this.debtCents = 0,
-    this.truckCount = 0,
-    this.driverCount = 0,
-    this.activeLoads = 0,
-  });
-
-  final String id;
-  final String accountId;
-  final String name;
-  final int cashCents;
+    this.startingCity = 'Dallas, TX',
+    List<FleetVehicle> fleet = const [],
+    List<CompanyDriver> drivers = const [],
+    List<CompanyLoad> loads = const [],
+  }) : fleet = List.unmodifiable(fleet),
+       drivers = List.unmodifiable(drivers),
+       loads = List.unmodifiable(loads);
+  final String id, accountId, name, startingCity;
+  final int cashCents, revision, debtCents;
   final double reputation;
   final CompanyProgression progression;
   final SimulationClock simulation;
-  final int revision;
-  final int debtCents, truckCount, driverCount, activeLoads;
+  final List<FleetVehicle> fleet;
+  final List<CompanyDriver> drivers;
+  final List<CompanyLoad> loads;
+  int get truckCount => fleet.length;
+  int get driverCount => drivers.length;
+  int get activeLoads => loads.where((l) => !l.delivered).length;
 
   CompanyState copyWith({
     int? cashCents,
     int? debtCents,
-    int? truckCount,
-    int? driverCount,
-    int? activeLoads,
+    List<FleetVehicle>? fleet,
+    List<CompanyDriver>? drivers,
+    List<CompanyLoad>? loads,
     CompanyProgression? progression,
     SimulationClock? simulation,
   }) => CompanyState(
     id: id,
     accountId: accountId,
     name: name,
+    startingCity: startingCity,
     cashCents: cashCents ?? this.cashCents,
     reputation: reputation,
     progression: progression ?? this.progression,
     simulation: simulation ?? this.simulation,
     revision: revision + 1,
     debtCents: debtCents ?? this.debtCents,
-    truckCount: truckCount ?? this.truckCount,
-    driverCount: driverCount ?? this.driverCount,
-    activeLoads: activeLoads ?? this.activeLoads,
+    fleet: fleet ?? this.fleet,
+    drivers: drivers ?? this.drivers,
+    loads: loads ?? this.loads,
   );
+}
+
+class FleetVehicle {
+  const FleetVehicle({
+    required this.id,
+    required this.unitNumber,
+    required this.catalogId,
+    required this.name,
+    required this.vehicleClass,
+    required this.used,
+    required this.year,
+    required this.purchasePriceCents,
+    required this.mileage,
+    required this.conditionPercent,
+    required this.city,
+    required this.latitude,
+    required this.longitude,
+  });
+  final String id, unitNumber, catalogId, name, vehicleClass, city;
+  final bool used;
+  final int year, purchasePriceCents, mileage, conditionPercent;
+  final double latitude, longitude;
+  FleetVehicle movedTo(GameCity destination, int miles) => FleetVehicle(
+    id: id,
+    unitNumber: unitNumber,
+    catalogId: catalogId,
+    name: name,
+    vehicleClass: vehicleClass,
+    used: used,
+    year: year,
+    purchasePriceCents: purchasePriceCents,
+    mileage: mileage + miles,
+    conditionPercent: conditionPercent,
+    city: destination.name,
+    latitude: destination.latitude,
+    longitude: destination.longitude,
+  );
+}
+
+class CompanyDriver {
+  const CompanyDriver({
+    required this.id,
+    required this.name,
+    this.truckId,
+    this.milesDriven = 0,
+    this.cdlClass = 'Class A',
+  });
+  final String id, name, cdlClass;
+  final String? truckId;
+  final int milesDriven;
+  CompanyDriver assignedTo(String? id) => CompanyDriver(
+    id: this.id,
+    name: name,
+    truckId: id,
+    milesDriven: milesDriven,
+    cdlClass: cdlClass,
+  );
+  CompanyDriver addMiles(int miles) => CompanyDriver(
+    id: id,
+    name: name,
+    truckId: truckId,
+    milesDriven: milesDriven + miles,
+    cdlClass: cdlClass,
+  );
+}
+
+class CompanyLoad {
+  const CompanyLoad({
+    required this.id,
+    required this.truckId,
+    required this.driverId,
+    required this.origin,
+    required this.destination,
+    this.delivered = false,
+    this.miles = 263,
+    this.revenueCents = 250000,
+  });
+  final String id, truckId, driverId, origin, destination;
+  final bool delivered;
+  final int miles, revenueCents;
+  CompanyLoad complete() => CompanyLoad(
+    id: id,
+    truckId: truckId,
+    driverId: driverId,
+    origin: origin,
+    destination: destination,
+    delivered: true,
+    miles: miles,
+    revenueCents: revenueCents,
+  );
+}
+
+class GameCity {
+  const GameCity(this.name, this.latitude, this.longitude);
+  final String name;
+  final double latitude, longitude;
+}
+
+const gameCities = [
+  GameCity('Dallas, TX', 32.7767, -96.7970),
+  GameCity('Atlanta, GA', 33.7490, -84.3880),
+  GameCity('Chicago, IL', 41.8781, -87.6298),
+  GameCity('Denver, CO', 39.7392, -104.9903),
+  GameCity('Phoenix, AZ', 33.4484, -112.0740),
+  GameCity('Los Angeles, CA', 34.0522, -118.2437),
+  GameCity('Newark, NJ', 40.7357, -74.1724),
+  GameCity('Tulsa, OK', 36.1540, -95.9928),
+];
+GameCity? findGameCity(String name) {
+  for (final city in gameCities) {
+    if (city.name == name) return city;
+  }
+  return null;
 }
 
 class EquipmentComponent {

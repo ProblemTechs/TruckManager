@@ -7,7 +7,7 @@ BUILT_GAME="$PROJECT_DIR/build/linux/x64/release/bundle/truck_manager"
 
 cd "$PROJECT_DIR"
 
-if [[ -x "$BUILT_GAME" ]]; then
+if [[ "${1:-}" == "--built" && -x "$BUILT_GAME" ]]; then
   exec "$BUILT_GAME"
 fi
 
