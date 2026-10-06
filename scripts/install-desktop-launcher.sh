@@ -6,7 +6,10 @@ PROJECT_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 RUN_SCRIPT="$PROJECT_DIR/scripts/run-truck-manager.sh"
 ICON_FILE="$PROJECT_DIR/assets/truck-manager.svg"
 APPLICATIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-DESKTOP_DIR="${XDG_DESKTOP_DIR:-$HOME/Desktop}"
+if command -v xdg-user-dir >/dev/null 2>&1; then
+  DESKTOP_DIR="$(xdg-user-dir DESKTOP)"
+fi
+DESKTOP_DIR="${DESKTOP_DIR:-${XDG_DESKTOP_DIR:-$HOME/Desktop}}"
 APPLICATION_FILE="$APPLICATIONS_DIR/truck-manager.desktop"
 DESKTOP_FILE="$DESKTOP_DIR/Truck Manager.desktop"
 
@@ -26,7 +29,7 @@ write_launcher() {
     'Type=Application' \
     'Name=Truck Manager' \
     'Comment=Run your nationwide trucking company' \
-    "Exec=$RUN_SCRIPT" \
+    "Exec=bash \"$RUN_SCRIPT\"" \
     "Icon=$ICON_FILE" \
     "Path=$PROJECT_DIR" \
     'Terminal=true' \

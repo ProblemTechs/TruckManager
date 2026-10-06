@@ -48,7 +48,9 @@ Double-click **Truck Manager** on the desktop, or open it from the applications 
 The first launch generates Linux desktop support if needed and downloads the Flutter
 packages. Launches run the current checkout, so pulling an update does not open an
 older release binary. To explicitly open an existing release build, use
-`bash scripts/run-truck-manager.sh --built`.
+`bash scripts/run-truck-manager.sh --built`. The launcher automatically finds Flutter
+in common Kali and Ubuntu locations, including `~/development/flutter`. For a custom
+installation, set `FLUTTER_BIN` to the full path of the Flutter executable.
 
 ## Local account and gameplay alpha
 
