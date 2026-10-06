@@ -28,6 +28,14 @@ void main() {
             )
             as Map;
     expect(data['complete'], isFalse);
+    final highwayData = jsonDecode(
+      await rootBundle.loadString('assets/maps/highways.json'),
+    ) as Map;
+    final roads = highwayData['roads'] as List;
+    expect(roads.length, greaterThan(5000));
+    expect(roads.every((r) => (r['lines'] as List).isNotEmpty), isTrue);
+    expect(roads.any((r) => r['level'] == 'Interstate' && r['name'] == '35'), isTrue);
+
     final borders = jsonDecode(
       await rootBundle.loadString('assets/maps/border_stations.json'),
     ) as Map;
@@ -127,6 +135,8 @@ void main() {
       await tester.runAsync(() async {
         await rootBundle.loadString('assets/maps/us_states.json');
         await rootBundle.loadString('assets/maps/weigh_stations.json');
+        await rootBundle.loadString('assets/maps/border_stations.json');
+        await rootBundle.loadString('assets/maps/highways.json');
         await Future<void>.delayed(Duration.zero);
       });
       await tester.pump(const Duration(milliseconds: 100));

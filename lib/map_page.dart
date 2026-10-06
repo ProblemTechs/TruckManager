@@ -16,17 +16,20 @@ class _MapPageState extends State<MapPage> {
   late final Future<Map<String, dynamic>> dataset = _load();
   bool showStations = true;
   bool showBorderStations = true;
+  bool showHighways = true;
   String selected = 'Select a truck or weigh station to see its details.';
   Future<Map<String, dynamic>> _load() async {
     final files = await Future.wait([
       rootBundle.loadString('assets/maps/us_states.json'),
       rootBundle.loadString('assets/maps/weigh_stations.json'),
       rootBundle.loadString('assets/maps/border_stations.json'),
+      rootBundle.loadString('assets/maps/highways.json'),
     ]);
     return {
       'states': (jsonDecode(files[0]) as Map<String, dynamic>)['states'],
       'weigh': jsonDecode(files[1]) as Map<String, dynamic>,
       'borders': jsonDecode(files[2]) as Map<String, dynamic>,
+      'highways': jsonDecode(files[3]) as Map<String, dynamic>,
     };
   }
 
@@ -64,6 +67,11 @@ class _MapPageState extends State<MapPage> {
                 label: const Text('Simulated state-line stations'),
                 selected: showBorderStations,
                 onSelected: (v) => setState(() => showBorderStations = v),
+              ),
+              FilterChip(
+                label: const Text('Major highways'),
+                selected: showHighways,
+                onSelected: (v) => setState(() => showHighways = v),
               ),
               TextButton.icon(
                 onPressed: () => transform.value = Matrix4.identity(),
@@ -135,6 +143,9 @@ class _MapPageState extends State<MapPage> {
                                       states: (data['states'] as List)
                                           .cast<Map<String, dynamic>>(),
                                       stations: visibleStations,
+                                      roads: showHighways
+                                          ? ((data['highways'] as Map)['roads'] as List).cast<Map<String, dynamic>>()
+                                          : const [],
                                       fleet: truckGameState.fleet,
                                     ),
                                   ),
@@ -148,7 +159,7 @@ class _MapPageState extends State<MapPage> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '${weigh['attribution']} • Real coverage incomplete; status unknown. Purple markers are fictional game facilities, not verified road crossings. AK/HI have no interstate land borders.',
+                        '${weigh['attribution']} • Real coverage incomplete; status unknown. Roads: Natural Earth (public domain), generalized highway snapshot. Purple markers are fictional game facilities, not verified road crossings. AK/HI have no interstate land borders.',
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.white54,
@@ -264,9 +275,11 @@ class UsaMapPainter extends CustomPainter {
     required this.states,
     required this.stations,
     required this.fleet,
+    this.roads = const [],
   });
   final List<Map<String, dynamic>> states, stations;
   final List<FleetVehicle> fleet;
+  final List<Map<String, dynamic>> roads;
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(
@@ -314,6 +327,32 @@ class UsaMapPainter extends CustomPainter {
           color: Colors.white38,
           size: 11,
         );
+    }
+    final labeledRoads = <String>{};
+    for (final road in roads) {
+      final interstate = road['level'] == 'Interstate';
+      for (final line in road['lines'] as List) {
+        final path = Path();
+        Offset? labelPosition;
+        var started = false;
+        for (final point in line as List) {
+          final position = projectUsa(
+            (point[1] as num).toDouble(), (point[0] as num).toDouble(), size,
+          );
+          if (position == null) { started = false; continue; }
+          labelPosition ??= position;
+          if (!started) { path.moveTo(position.dx, position.dy); started = true; }
+          else { path.lineTo(position.dx, position.dy); }
+        }
+        canvas.drawPath(path, Paint()
+          ..color = interstate ? const Color(0xFF59A9EA) : const Color(0xFF887866)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = interstate ? 1.4 : .6);
+        final name = road['name'] as String;
+        if (interstate && name.isNotEmpty && labelPosition != null && labeledRoads.add(name)) {
+          _text(canvas, 'I-$name', labelPosition, color: Colors.lightBlueAccent, size: 9);
+        }
+      }
     }
     _text(canvas, 'ALASKA', Offset(size.width * .06, size.height * .72));
     _text(canvas, 'HAWAII', Offset(size.width * .39, size.height * .74));
@@ -385,5 +424,5 @@ class UsaMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant UsaMapPainter old) =>
-      old.fleet != fleet || old.stations != stations || old.states != states;
+      old.fleet != fleet || old.stations != stations || old.states != states || old.roads != roads;
 }

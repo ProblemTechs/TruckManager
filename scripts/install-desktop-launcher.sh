@@ -50,3 +50,6 @@ fi
 printf 'Truck Manager launcher installed.\n'
 printf 'Desktop icon: %s\n' "$DESKTOP_FILE"
 printf 'You can also open Truck Manager from the applications menu.\n'
+
+# Install the optional terminal phrase alongside the desktop launcher.
+bash "$SCRIPT_DIR/install-terminal-launcher.sh"

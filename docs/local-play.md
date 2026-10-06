@@ -24,3 +24,14 @@ For Android, use an Android emulator or connected Android device and `flutter ru
 The repository is still a development build: backend domain systems exist, but frontend screens must be fully wired to `TruckGameState`/backend services before it should be treated as a complete playable beta.
 
 For the first playable loop, use Settings to buy a cargo van ($48,000) and hire a driver ($1,000), then use Loads to accept and complete a starter load.
+
+## Terminal phrase and highways
+
+Run `bash scripts/install-terminal-launcher.sh`, open a new terminal, and type
+`start trucking game` from any folder. It launches an existing release build
+when available, otherwise it runs Flutter. Rebuild your release after updating
+code if you use a release binary. The desktop installer also installs this command.
+The installer refuses to replace another program's `start` command.
+
+The operations map includes a toggle for bundled major highways (blue interstates
+and tan US/major state highways), with generalized public-domain source geometry.

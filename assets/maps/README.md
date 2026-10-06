@@ -36,3 +36,10 @@ approximate border points derived from the bundled outlines, not verified
 highway crossings or real weigh stations. Alaska and Hawaii have no interstate
 land borders; DC and point-only Four Corners contacts are excluded.
 Regenerate with `python3 scripts/generate-border-stations.py`.
+
+Highways: Natural Earth public-domain 1:10m roads, generalized for game display.
+Includes every USA Interstate/Federal segment in that snapshot plus major state
+highways. Source gaps and generalized geometry mean this is not a complete
+current navigation network. Blue = interstates; tan = other highways.
+Download the sourceUrl recorded in highways.json and run
+`python3 scripts/import-highways.py downloaded-roads.geojson` to refresh.
