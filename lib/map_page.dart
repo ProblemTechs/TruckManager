@@ -15,15 +15,18 @@ class _MapPageState extends State<MapPage> {
   final transform = TransformationController();
   late final Future<Map<String, dynamic>> dataset = _load();
   bool showStations = true;
+  bool showBorderStations = true;
   String selected = 'Select a truck or weigh station to see its details.';
   Future<Map<String, dynamic>> _load() async {
     final files = await Future.wait([
       rootBundle.loadString('assets/maps/us_states.json'),
       rootBundle.loadString('assets/maps/weigh_stations.json'),
+      rootBundle.loadString('assets/maps/border_stations.json'),
     ]);
     return {
       'states': (jsonDecode(files[0]) as Map<String, dynamic>)['states'],
       'weigh': jsonDecode(files[1]) as Map<String, dynamic>,
+      'borders': jsonDecode(files[2]) as Map<String, dynamic>,
     };
   }
 
@@ -50,12 +53,17 @@ class _MapPageState extends State<MapPage> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               const Text(
-                'Green: company vehicles • Amber: mapped weigh stations',
+                'Green: vehicles • Amber: real stations • Purple: simulated border stations',
               ),
               FilterChip(
-                label: const Text('Weigh stations'),
+                label: const Text('Real weigh stations'),
                 selected: showStations,
                 onSelected: (v) => setState(() => showStations = v),
+              ),
+              FilterChip(
+                label: const Text('Simulated state-line stations'),
+                selected: showBorderStations,
+                onSelected: (v) => setState(() => showBorderStations = v),
               ),
               TextButton.icon(
                 onPressed: () => transform.value = Matrix4.identity(),
@@ -80,12 +88,18 @@ class _MapPageState extends State<MapPage> {
                 final weigh = data['weigh'] as Map<String, dynamic>;
                 final stations = (weigh['stations'] as List)
                     .cast<Map<String, dynamic>>();
+                final borders = ((data['borders'] as Map)['stations'] as List)
+                    .cast<Map<String, dynamic>>();
+                final visibleStations = <Map<String, dynamic>>[
+                  if (showStations) ...stations,
+                  if (showBorderStations) ...borders,
+                ];
                 return Column(
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '${stations.length} mapped stations • ${weigh['coverage']} • Location snapshot ${weigh['retrievedAt']}',
+                        '${borders.length} simulated state-border stations • ${stations.length} real mapped stations • ${weigh['coverage']} • Location snapshot ${weigh['retrievedAt']}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.white60,
@@ -114,15 +128,13 @@ class _MapPageState extends State<MapPage> {
                                   onTapUp: (details) => _select(
                                     details.localPosition,
                                     Size(width, height),
-                                    stations,
+                                    visibleStations,
                                   ),
                                   child: CustomPaint(
                                     painter: UsaMapPainter(
                                       states: (data['states'] as List)
                                           .cast<Map<String, dynamic>>(),
-                                      stations: showStations
-                                          ? stations
-                                          : const [],
+                                      stations: visibleStations,
                                       fleet: truckGameState.fleet,
                                     ),
                                   ),
@@ -136,7 +148,7 @@ class _MapPageState extends State<MapPage> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '${weigh['attribution']} • Coverage may be incomplete; station operating status is unknown.',
+                        '${weigh['attribution']} • Real coverage incomplete; status unknown. Purple markers are fictional game facilities, not verified road crossings. AK/HI have no interstate land borders.',
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.white54,
@@ -201,7 +213,7 @@ class _MapPageState extends State<MapPage> {
         details = _vehicleDetails(vehicle);
       }
     }
-    if (details == null && showStations) {
+    if (details == null) {
       for (final station in stations) {
         final projected = projectUsa(
           (station['latitude'] as num).toDouble(),
@@ -213,7 +225,7 @@ class _MapPageState extends State<MapPage> {
         if (distance < nearest) {
           nearest = distance;
           details =
-              '${station['name']} • ${station['facilityType']} • Source: ${station['source']} • Operating status unknown';
+              '${station['name']} • ${station['facilityType']} • Source: ${station['source']} • ${station['simulated'] == true ? 'Fictional gameplay location' : 'Operating status unknown'}';
         }
       }
     }
@@ -312,7 +324,13 @@ class UsaMapPainter extends CustomPainter {
         size,
       );
       if (position != null)
-        canvas.drawCircle(position, 2.8, Paint()..color = Colors.amber);
+        canvas.drawCircle(
+          position,
+          station['simulated'] == true ? 4 : 2.8,
+          Paint()..color = station['simulated'] == true
+              ? Colors.purpleAccent
+              : Colors.amber,
+        );
     }
     final locations = <String, int>{};
     for (final vehicle in fleet) {

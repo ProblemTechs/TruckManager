@@ -28,6 +28,15 @@ void main() {
             )
             as Map;
     expect(data['complete'], isFalse);
+    final borders = jsonDecode(
+      await rootBundle.loadString('assets/maps/border_stations.json'),
+    ) as Map;
+    final simulated = borders['stations'] as List;
+    expect(simulated.length, 104);
+    expect(simulated.map((s) => s['id']).toSet().length, 104);
+    expect(simulated.expand((s) => s['states'] as List).toSet().length, 48);
+    expect(simulated.every((s) => s['simulated'] == true), isTrue);
+
     final stations = data['stations'] as List;
     expect(stations, isNotEmpty);
     expect(stations.map((s) => s['id']).toSet().length, stations.length);

@@ -29,3 +29,10 @@ python3 scripts/update-weigh-stations.py
 Failures or truncated responses abort before replacing the asset. Add verified
 public sources to the importer before extending its coverage label. Keep
 `complete: false` until a documented complete national inventory is available.
+
+Simulated state-line layer: `border_stations.json` has one fictional gameplay
+facility for each of 104 shared state land borders. Purple markers are
+approximate border points derived from the bundled outlines, not verified
+highway crossings or real weigh stations. Alaska and Hawaii have no interstate
+land borders; DC and point-only Four Corners contacts are excluded.
+Regenerate with `python3 scripts/generate-border-stations.py`.
